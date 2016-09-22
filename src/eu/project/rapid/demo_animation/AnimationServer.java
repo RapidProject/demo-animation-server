@@ -22,9 +22,12 @@ import java.awt.GridLayout;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -34,7 +37,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import eu.project.rapid.common.RapidConstants;
 import eu.project.rapid.common.RapidMessages;
+import eu.project.rapid.common.RapidUtils;
 import marvin.gui.MarvinImagePanel;
 import marvin.image.MarvinImage;
 
@@ -84,7 +89,10 @@ public class AnimationServer {
     imgVisualizer = new ImageVisualizer();
     imgVisualizer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+    // Connect with the DS and register so that the other components can get the IP
+    registerWithDs();
 
+    // Now can start listening for commands
     new Thread(new CommandHandler()).start();
 
     try {
@@ -96,6 +104,35 @@ public class AnimationServer {
       }
 
     } catch (IOException e) {
+    }
+  }
+
+  private void registerWithDs() {
+    String myIp = RapidUtils.getVmIpLinux();
+    System.err.println("Sending my ip to DS, myIp: " + myIp);
+
+    Socket socket = null;
+    ObjectOutputStream oos = null;
+    ObjectInputStream ois = null;
+    try {
+      System.err.println(String.format("Connecting with DS %s:%d", RapidConstants.DEFAULT_DS_IP,
+          RapidConstants.DEFAULT_DS_PORT));
+      socket = new Socket(RapidConstants.DEFAULT_DS_IP, RapidConstants.DEFAULT_DS_PORT);
+      oos = new ObjectOutputStream(socket.getOutputStream());
+      ois = new ObjectInputStream(socket.getInputStream());
+
+      oos.writeByte(RapidMessages.DEMO_SERVER_REGISTER_DS);
+      oos.writeUTF(myIp);
+      oos.flush();
+    } catch (UnknownHostException e) {
+      System.err.println("Could not register with DS: " + e);
+    } catch (IOException e) {
+      System.err.println("Could not register with DS: " + e);
+      e.printStackTrace();
+    } finally {
+      RapidUtils.closeQuietly(ois);
+      RapidUtils.closeQuietly(oos);
+      RapidUtils.closeQuietly(socket);
     }
   }
 
@@ -184,7 +221,7 @@ public class AnimationServer {
               imgVisualizer.updatePanel(Images.im_vmm_register_0);
               labelVmmStatus.setText(LABEL_VMM_STATUS + "Up");
               break;
-            case RapidMessages.VMM_REGISTER_DS:
+            case RapidMessages.VMM_REGISTER_DS_MSG:
               imgVisualizer.updatePanel(Images.im_vmm_register_1);
               break;
             case RapidMessages.VMM_REGISTER_DS_OK:
