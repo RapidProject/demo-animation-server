@@ -39,6 +39,7 @@ import javax.swing.JPanel;
 
 import eu.project.rapid.common.RapidConstants;
 import eu.project.rapid.common.RapidMessages;
+import eu.project.rapid.common.RapidMessages.AnimationMsg;
 import eu.project.rapid.common.RapidUtils;
 import marvin.gui.MarvinImagePanel;
 import marvin.image.MarvinImage;
@@ -90,7 +91,7 @@ public class AnimationServer {
     imgVisualizer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     // Connect with the DS and register so that the other components can get the IP
-    //registerWithDs();
+    // registerWithDs();
 
     // Now can start listening for commands
     new Thread(new CommandHandler()).start();
@@ -210,9 +211,10 @@ public class AnimationServer {
 
           log(TAG, command);
 
-          switch (command) {
+          AnimationMsg enumCommand = AnimationMsg.valueOf(command);
+          switch (enumCommand) {
             // The Virus Scanning is performed locally
-            case RapidMessages.AC_DECISION_LOCAL:
+            case AC_DECISION_LOCAL:
               startTime = System.currentTimeMillis();
               executing = true;
               new Thread() {
@@ -232,6 +234,9 @@ public class AnimationServer {
               labelExecution.setText(LABEL_EXECUTION + "Local");
               break;
 
+            default:
+              break;
+
             // The Virus Scanning is performed remotely
 
           }
@@ -245,7 +250,7 @@ public class AnimationServer {
 
 
     private void initialize() {
-      //imgVisualizer.updatePanel(Images.im_start_0);
+      // imgVisualizer.updatePanel(Images.im_start_0);
       labelDsStatus.setText(LABEL_DS_STATUS + "Down");
       labelVmmStatus.setText(LABEL_VMM_STATUS + "Down");
       labelVmStatus.setText(LABEL_VM_STATUS + "Down");
@@ -268,7 +273,7 @@ public class AnimationServer {
       super("RAPID Demo");
 
       imagePanel = new MarvinImagePanel();
-      //imagePanel.setImage(Images.im_start_0);
+      // imagePanel.setImage(Images.im_start_0);
 
       infoPanel = new JPanel();
       infoPanel.setLayout(new GridLayout(5, 2, 5, 5));
