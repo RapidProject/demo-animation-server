@@ -90,7 +90,7 @@ public class AnimationServer {
     imgVisualizer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     // Connect with the DS and register so that the other components can get the IP
-    registerWithDs();
+    //registerWithDs();
 
     // Now can start listening for commands
     new Thread(new CommandHandler()).start();
@@ -211,110 +211,6 @@ public class AnimationServer {
           log(TAG, command);
 
           switch (command) {
-            case RapidMessages.DS_UP:
-              imgVisualizer.updatePanel(Images.im_ds_up_0);
-              labelDsStatus.setText(LABEL_DS_STATUS + "Up");
-              break;
-
-            // The VMM is started, registers with the DS and starts two VMs
-            case RapidMessages.VMM_UP:
-              imgVisualizer.updatePanel(Images.im_vmm_register_0);
-              labelVmmStatus.setText(LABEL_VMM_STATUS + "Up");
-              break;
-            case RapidMessages.VMM_REGISTER_DS_MSG:
-              imgVisualizer.updatePanel(Images.im_vmm_register_1);
-              break;
-            case RapidMessages.VMM_REGISTER_DS_OK:
-              imgVisualizer.updatePanel(Images.im_vmm_register_2);
-              break;
-            case RapidMessages.VMM_START_TWO_VMS:
-              imgVisualizer.updatePanel(Images.im_vmm_register_3);
-              break;
-            case RapidMessages.VMM_VM1_STARTED:
-              imgVisualizer.updatePanel(Images.im_vmm_register_4);
-              labelVmStatus.setText(LABEL_VM_STATUS + "Up");
-              break;
-            case RapidMessages.VMM_VM2_STARTED:
-              imgVisualizer.updatePanel(Images.im_vmm_register_5);
-              break;
-
-            // The Acceleration Client (AC) on the User Device (UD) registers as a NEW device with
-            // the DS and the VMM and asks for a VM
-            case RapidMessages.AC_REGISTER_DS_NEW:
-              prev = false;
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(1, prev));
-              break;
-            case RapidMessages.DS_FIND_AVAILABLE_VMM:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(2, prev));
-              break;
-            case RapidMessages.AC_REGISTER_DS_NEW_OK:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(3, prev));
-              break;
-            case RapidMessages.AC_REGISTER_VMM_NEW:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(4, prev));
-              break;
-            case RapidMessages.VMM_FIND_AVAILABLE_VM:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(5, prev));
-              break;
-            case RapidMessages.AC_REGISTER_VMM_NEW_OK:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(6, prev));
-              break;
-
-            // The Acceleration Client (AC) on the User Device (UD) registers as a PREV device
-            // with the DS and the VMM and asks for a VM
-            case RapidMessages.AC_REGISTER_DS_PREV:
-              prev = true;
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(1, prev));
-              break;
-            case RapidMessages.DS_FIND_PREV_VMM:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(2, prev));
-              break;
-            case RapidMessages.AC_REGISTER_DS_PREV_OK:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(3, prev));
-              break;
-            case RapidMessages.AC_REGISTER_VMM_PREV:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(4, prev));
-              break;
-            case RapidMessages.VMM_FIND_PREV_VM:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(5, prev));
-              break;
-            case RapidMessages.AC_REGISTER_VMM_PREV_OK:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(6, prev));
-              break;
-
-            // The Acceleration Client (AC) on the User Device (UD) registers with the AS on the VM
-            // The registration phase goes through, connection, RTT, bandwidth measurements, etc.
-            case RapidMessages.AC_REGISTER_VM:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(7, prev));
-              labelCommType.setText(LABEL_COMM_TYPE + "Clear");
-              labelVmStatus.setText(LABEL_VM_STATUS + "Up, Connected");
-              break;
-            case RapidMessages.AC_CONNECT_VM:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(8, prev));
-              break;
-            case RapidMessages.AC_SEND_APK:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(9, prev));
-              break;
-            case RapidMessages.AC_RTT_MEASUREMENT:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(10, prev));
-              break;
-            case RapidMessages.AC_DL_MEASUREMENT:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(11, prev));
-              break;
-            case RapidMessages.AC_UL_MEASUREMENT:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(12, prev));
-              break;
-            case RapidMessages.AC_REGISTER_VM_OK:
-              imgVisualizer.updatePanel(Images.getUdRegisterImage(13, prev));
-              break;
-            case RapidMessages.AC_DISCONNECT_VM:
-              imgVisualizer.updatePanel(Images.im_start_1);
-              labelVmStatus.setText(LABEL_VM_STATUS + "Up, Disconnected");
-              labelDuration.setText(LABEL_DURATION + "-");
-              labelCommType.setText(LABEL_COMM_TYPE + "-");
-              labelExecution.setText(LABEL_EXECUTION + "-");
-              break;
-
             // The Virus Scanning is performed locally
             case RapidMessages.AC_DECISION_LOCAL:
               startTime = System.currentTimeMillis();
@@ -335,51 +231,9 @@ public class AnimationServer {
 
               labelExecution.setText(LABEL_EXECUTION + "Local");
               break;
-            case RapidMessages.AC_PREPARE_DATA:
-              imgVisualizer.updatePanel(Images.im_virus_local_0);
-              break;
-            case RapidMessages.AC_EXEC_LOCAL:
-              imgVisualizer.updatePanel(Images.im_virus_local_1);
-              break;
-            case RapidMessages.AC_FINISHED_LOCAL:
-              executing = false;
-              imgVisualizer.updatePanel(Images.im_virus_local_2);
-              labelExecution.setText(LABEL_EXECUTION + "Local Finished!");
-              break;
 
             // The Virus Scanning is performed remotely
-            case RapidMessages.AC_DECISION_REMOTE:
-              executing = true;
-              startTime = System.currentTimeMillis();
-              new Thread() {
-                public void run() {
-                  while (executing) {
-                    totalTime = (System.currentTimeMillis() - startTime) / 1000.0;
-                    labelDuration.setText(
-                        LABEL_DURATION + new DecimalFormat("#.##").format(totalTime) + "s");
-                    try {
-                      Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                    }
-                  }
-                }
-              }.start();
-              labelExecution.setText(LABEL_EXECUTION + "Remote");
-              break;
-            case RapidMessages.AC_REMOTE_SEND_DATA:
-              imgVisualizer.updatePanel(Images.im_virus_offload_1);
-              break;
-            case RapidMessages.AC_EXEC_REMOTE:
-              imgVisualizer.updatePanel(Images.im_virus_offload_2);
-              break;
-            case RapidMessages.AC_RESULT_REMOTE:
-              imgVisualizer.updatePanel(Images.im_virus_offload_3);
-              break;
-            case RapidMessages.AC_FINISHED_REMOTE:
-              executing = false;
-              imgVisualizer.updatePanel(Images.im_virus_offload_4);
-              labelExecution.setText(LABEL_EXECUTION + "Remote Finished!");
-              break;
+
           }
 
         } catch (InterruptedException e) {
@@ -391,7 +245,7 @@ public class AnimationServer {
 
 
     private void initialize() {
-      imgVisualizer.updatePanel(Images.im_start_0);
+      //imgVisualizer.updatePanel(Images.im_start_0);
       labelDsStatus.setText(LABEL_DS_STATUS + "Down");
       labelVmmStatus.setText(LABEL_VMM_STATUS + "Down");
       labelVmStatus.setText(LABEL_VM_STATUS + "Down");
@@ -414,7 +268,7 @@ public class AnimationServer {
       super("RAPID Demo");
 
       imagePanel = new MarvinImagePanel();
-      imagePanel.setImage(Images.im_start_0);
+      //imagePanel.setImage(Images.im_start_0);
 
       infoPanel = new JPanel();
       infoPanel.setLayout(new GridLayout(5, 2, 5, 5));
