@@ -214,6 +214,7 @@ public class AnimationServer {
 
 					AnimationMsg enumCommand = AnimationMsg.valueOf(command);
 					switch (enumCommand) {
+                        // Scenario 1: DS, SLAM, VMM starting up
 					case INITIAL_IMG_0:
 						imgVisualizer.updatePanel(Images.getImage(1));
 						break;
@@ -233,8 +234,84 @@ public class AnimationServer {
 						imgVisualizer.updatePanel(Images.getImage(5));
 						labelSlamStatus.setText(LABEL_VMM_STATUS + "UP");
 						break;
+                    case VMM_REGISTER_DS:
+                        imgVisualizer.updatePanel(Images.getImage(6));
+                        break;
+                    case VMM_REGISTER_SLAM:
+                        imgVisualizer.updatePanel(Images.getImage(7));
+                        break;
+                        // Scenario 2:
+                    case AC_NEW_REGISTER_DS:
+                        imgVisualizer.updatePanel(Images.getImage(9));
+                        break;
+                        //
+                    case DS_NEW_FIND_MACHINES:
+                        imgVisualizer.updatePanel(Images.getImage(10));
+                        break;
+                    case DS_NEW_IP_LIST_AC:
+                        imgVisualizer.updatePanel(Images.getImage(11));
+                        break;
+                    case AC_NEW_REGISTER_SLAM:
+                        imgVisualizer.updatePanel(Images.getImage(12));
+                        break;
+                    case SLAM_NEW_VM_VMM:
+                        imgVisualizer.updatePanel(Images.getImage(13));
+                        break;
+                    case VMM_NEW_START_VM:
+                        imgVisualizer.updatePanel(Images.getImage(14));
+                        break;
+                    case VMM_NEW_REGISTER_AS:
+                        imgVisualizer.updatePanel(Images.getImage(15));
+                        break;
+                    case VMM_NEW_VM_REGISTER_DS:
+                        imgVisualizer.updatePanel(Images.getImage(16));
+                        break;
+                    case VMM_NEW_VM_IP_SLAM:
+                        imgVisualizer.updatePanel(Images.getImage(17));
+                        break;
+                    case SLAM_NEW_VM_IP_AC:
+                        imgVisualizer.updatePanel(Images.getImage(18));
+                        break;
+                    case AC_NEW_REGISTER_VM:
+                        imgVisualizer.updatePanel(Images.getImage(19));
+                        break;
+                    case AC_NEW_CONN_VM:
+                        imgVisualizer.updatePanel(Images.getImage(20));
+                        break;
+                    case AC_NEW_APK_VM:
+                        imgVisualizer.updatePanel(Images.getImage(21));
+                        break;
+                    case AC_NEW_RTT_VM:
+                        imgVisualizer.updatePanel(Images.getImage(22));
+                        break;
+                    case AC_NEW_DL_RATE_VM:
+                        imgVisualizer.updatePanel(Images.getImage(23));
+                        break;
+                    case AC_NEW_UL_RATE_VM:
+                        imgVisualizer.updatePanel(Images.getImage(24));
+                        break;
+                    case AC_NEW_REGISTRATION_OK_VM:
+                        imgVisualizer.updatePanel(Images.getImage(25));
+                        break;
 
-					// by CH
+                    // Scenario 3:
+                    case AC_PREV_REGISTRATION_OK_VM:
+                        imgVisualizer.updatePanel(Images.getImage(26));
+                        break;
+                    case AC_PREV_UL_RATE_VM:
+                        imgVisualizer.updatePanel(Images.getImage(27));
+                        break;
+                    case AC_PREV_DL_RATE_VM:
+                        imgVisualizer.updatePanel(Images.getImage(28));
+                        break;
+                    case AC_PREV_RTT_VM:
+                        imgVisualizer.updatePanel(Images.getImage(29));
+                        break;
+                    case AC_PREV_APK_VM:
+                        imgVisualizer.updatePanel(Images.getImage(30));
+                        break;
+                        //
+                        // by CH
 					case AC_PREV_CONN_VM:
 						imgVisualizer.updatePanel(Images.getImage(31));
 						break;
@@ -323,25 +400,8 @@ public class AnimationServer {
 					case AC_LISTENING_D2D:
 						imgVisualizer.updatePanel(Images.getImage(60));
 						break;
-
-					// The Virus Scanning is performed locally
-					/*
-					 * case AC_DECISION_LOCAL: startTime =
-					 * System.currentTimeMillis(); executing = true; new
-					 * Thread() { public void run() { while (executing) {
-					 * totalTime = (System.currentTimeMillis() - startTime) /
-					 * 1000.0; labelDuration.setText( LABEL_DURATION + new
-					 * DecimalFormat("#.##").format(totalTime) + "s"); try {
-					 * Thread.sleep(10); } catch (InterruptedException e) { } }
-					 * } }.start();
-					 * 
-					 * labelExecution.setText(LABEL_EXECUTION + "Local"); break;
-					 */
-
 					default:
 						break;
-
-					// The Virus Scanning is performed remotely
 					}
 
 				} catch (InterruptedException e) {
@@ -355,7 +415,7 @@ public class AnimationServer {
 			labelDsStatus.setText(LABEL_DS_STATUS + "Down");
 			labelVmmStatus.setText(LABEL_VMM_STATUS + "Down");
 			labelVmStatus.setText(LABEL_VM_STATUS + "Down");
-			labelSlamStatus.setText(LABEL_SLAM_STATUS + "TODO");
+			labelSlamStatus.setText(LABEL_SLAM_STATUS + "Down");
 
 			labelExecution.setText(LABEL_EXECUTION + "-");
 			labelDuration.setText(LABEL_DURATION + "-");
