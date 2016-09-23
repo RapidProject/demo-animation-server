@@ -222,7 +222,7 @@ public class AnimationServer {
 
 
     private void initialize() {
-      //imgVisualizer.updatePanel(Images.im_start_0);
+      imgVisualizer.updatePanel(Images.getImage(1));
       labelDsStatus.setText(LABEL_DS_STATUS + "Down");
       labelVmmStatus.setText(LABEL_VMM_STATUS + "Down");
       labelVmStatus.setText(LABEL_VM_STATUS + "Down");
