@@ -232,6 +232,16 @@ public class AnimationServer {
                   imgVisualizer.updatePanel(Images.getImage(5));
                   labelSlamStatus.setText(LABEL_VMM_STATUS + "UP");
                   break;
+              case VMM_REGISTER_DS:
+                  imgVisualizer.updatePanel(Images.getImage(6));
+                  break;
+              case VMM_REGISTER_SLAM:
+                  imgVisualizer.updatePanel(Images.getImage(7));
+                  break;
+              case AC_INITIAL_IMG:
+                  imgVisualizer.updatePanel(Images.getImage(8));
+                  break;
+
             // The Virus Scanning is performed locally
             /*case AC_DECISION_LOCAL:
               startTime = System.currentTimeMillis();
