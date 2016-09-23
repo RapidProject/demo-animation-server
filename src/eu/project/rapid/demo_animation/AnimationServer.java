@@ -213,6 +213,14 @@ public class AnimationServer {
 
           AnimationMsg enumCommand = AnimationMsg.valueOf(command);
           switch (enumCommand) {
+              case SLAM_UP:
+                  imgVisualizer.updatePanel(Images.getImage(3));
+                  labelSlamStatus.setText(LABEL_SLAM_STATUS + "UP");
+                  break;
+              case SLAM_REGISTER_DS:
+                  Thread.sleep(1000);
+                  imgVisualizer.updatePanel(Images.getImage(4));
+                  break;
             // The Virus Scanning is performed locally
             /*case AC_DECISION_LOCAL:
               startTime = System.currentTimeMillis();
