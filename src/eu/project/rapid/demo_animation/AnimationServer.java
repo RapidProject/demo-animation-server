@@ -214,7 +214,7 @@ public class AnimationServer {
           AnimationMsg enumCommand = AnimationMsg.valueOf(command);
           switch (enumCommand) {
             // The Virus Scanning is performed locally
-            case AC_DECISION_LOCAL:
+            /*case AC_DECISION_LOCAL:
               startTime = System.currentTimeMillis();
               executing = true;
               new Thread() {
@@ -232,7 +232,7 @@ public class AnimationServer {
               }.start();
 
               labelExecution.setText(LABEL_EXECUTION + "Local");
-              break;
+              break;*/
 
             default:
               break;
