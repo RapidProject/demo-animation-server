@@ -29,7 +29,7 @@ public class Images {
   public static final Map<Integer, MarvinImage> images = new HashMap<>();
 
   static {
-    for (int i = 1; i <= 61; i++) {
+    for (int i = 1; i <= 10; i++) {
       images.put(i, MarvinImageIO.loadImage("resources/figs/fig-" + i + ".png"));
       }
   }

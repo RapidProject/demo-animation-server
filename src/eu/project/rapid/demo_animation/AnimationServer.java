@@ -45,298 +45,371 @@ import marvin.gui.MarvinImagePanel;
 import marvin.image.MarvinImage;
 
 /**
- * A simple Java program, which listens for commands from several clients and updates the scenario
- * based on the commands. Used to show the interaction between the different entities in real-time.
- * To be used for the Rapid demos.
+ * A simple Java program, which listens for commands from several clients and
+ * updates the scenario based on the commands. Used to show the interaction
+ * between the different entities in real-time. To be used for the Rapid demos.
  * 
  * @author sokol
  *
  */
 public class AnimationServer {
-  private static final String TAG = "AnimationServer";
-  private ServerSocket serverSocket;
-  private static final int port = 6666;
+	private static final String TAG = "AnimationServer";
+	private ServerSocket serverSocket;
+	private static final int port = 6666;
 
-  private static BlockingQueue<String> commandQueue;
+	private static BlockingQueue<String> commandQueue;
 
-  private static ImageVisualizer imgVisualizer;
+	private static ImageVisualizer imgVisualizer;
 
-  private static final String LABEL_EXECUTION = "Execution: ";
-  private static final String LABEL_DURATION = "Duration: ";
-  // private static final String LABEL_ENERGY = "Energy: ";
-  private static final String LABEL_DS_STATUS = "DS status: ";
-  private static final String LABEL_VMM_STATUS = "VMM status: ";
-  private static final String LABEL_VM_STATUS = "VM status: ";
-  private static final String LABEL_SLAM_STATUS = "SLAM status: ";
-  private static final String LABEL_COMM_TYPE = "Communication type: ";
+	private static final String LABEL_EXECUTION = "Execution: ";
+	private static final String LABEL_DURATION = "Duration: ";
+	// private static final String LABEL_ENERGY = "Energy: ";
+	private static final String LABEL_DS_STATUS = "DS status: ";
+	private static final String LABEL_VMM_STATUS = "VMM status: ";
+	private static final String LABEL_VM_STATUS = "VM status: ";
+	private static final String LABEL_SLAM_STATUS = "SLAM status: ";
+	private static final String LABEL_COMM_TYPE = "Communication type: ";
 
-  private static JLabel labelExecution = new JLabel(LABEL_EXECUTION);
-  private static JLabel labelDuration = new JLabel(LABEL_DURATION);
-  // private static JLabel label_energy = new JLabel(LABEL_ENERGY);
-  private static JLabel labelDsStatus = new JLabel(LABEL_DS_STATUS);
-  private static JLabel labelVmmStatus = new JLabel(LABEL_VMM_STATUS);
-  private static JLabel labelVmStatus = new JLabel(LABEL_VM_STATUS);
-  private static JLabel labelSlamStatus = new JLabel(LABEL_SLAM_STATUS);
-  private static JLabel labelCommType = new JLabel(LABEL_COMM_TYPE);
+	private static JLabel labelExecution = new JLabel(LABEL_EXECUTION);
+	private static JLabel labelDuration = new JLabel(LABEL_DURATION);
+	// private static JLabel label_energy = new JLabel(LABEL_ENERGY);
+	private static JLabel labelDsStatus = new JLabel(LABEL_DS_STATUS);
+	private static JLabel labelVmmStatus = new JLabel(LABEL_VMM_STATUS);
+	private static JLabel labelVmStatus = new JLabel(LABEL_VM_STATUS);
+	private static JLabel labelSlamStatus = new JLabel(LABEL_SLAM_STATUS);
+	private static JLabel labelCommType = new JLabel(LABEL_COMM_TYPE);
 
-  private boolean executing = false;
-  private long startTime = 0;
-  private double totalTime = 0;
+	private boolean executing = false;
+	private long startTime = 0;
+	private double totalTime = 0;
 
-  public AnimationServer() {
+	public AnimationServer() {
 
-    commandQueue = new ArrayBlockingQueue<String>(1000);
+		commandQueue = new ArrayBlockingQueue<String>(1000);
 
-    imgVisualizer = new ImageVisualizer();
-    imgVisualizer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		imgVisualizer = new ImageVisualizer();
+		imgVisualizer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-    // Connect with the DS and register so that the other components can get the IP
-    // registerWithDs();
+		// Connect with the DS and register so that the other components can get
+		// the IP
+		registerWithDs();
 
-    // Now can start listening for commands
-    new Thread(new CommandHandler()).start();
+		// Now can start listening for commands
+		new Thread(new CommandHandler()).start();
 
-    try {
-      serverSocket = new ServerSocket(port);
-      log(TAG, "Waiting for connections on port " + port);
-      while (true) {
-        Socket clientSocket = serverSocket.accept();
-        new Thread(new ClientHandler(clientSocket)).start();
-      }
+		try {
+			serverSocket = new ServerSocket(port);
+			log(TAG, "Waiting for connections on port " + port);
+			while (true) {
+				Socket clientSocket = serverSocket.accept();
+				new Thread(new ClientHandler(clientSocket)).start();
+			}
 
-    } catch (IOException e) {
-    }
-  }
+		} catch (IOException e) {
+		}
+	}
 
-  private void registerWithDs() {
-    String myIp = RapidUtils.getVmIpLinux();
-    System.err.println("Sending my ip to DS, myIp: " + myIp);
+	private void registerWithDs() {
+		String myIp = RapidUtils.getVmIpLinux();
+		System.err.println("Sending my ip to DS, myIp: " + myIp);
 
-    Socket socket = null;
-    ObjectOutputStream oos = null;
-    ObjectInputStream ois = null;
-    try {
-      System.err.println(String.format("Connecting with DS %s:%d", RapidConstants.DEFAULT_DS_IP,
-          RapidConstants.DEFAULT_DS_PORT));
-      socket = new Socket(RapidConstants.DEFAULT_DS_IP, RapidConstants.DEFAULT_DS_PORT);
-      oos = new ObjectOutputStream(socket.getOutputStream());
-      ois = new ObjectInputStream(socket.getInputStream());
+		Socket socket = null;
+		ObjectOutputStream oos = null;
+		ObjectInputStream ois = null;
+		try {
+			System.err.println(String.format("Connecting with DS %s:%d", RapidConstants.DEFAULT_DS_IP,
+					RapidConstants.DEFAULT_DS_PORT));
+			socket = new Socket(RapidConstants.DEFAULT_DS_IP, RapidConstants.DEFAULT_DS_PORT);
+			oos = new ObjectOutputStream(socket.getOutputStream());
+			ois = new ObjectInputStream(socket.getInputStream());
 
-      oos.writeByte(RapidMessages.DEMO_SERVER_REGISTER_DS);
-      oos.writeUTF(myIp);
-      oos.flush();
-    } catch (UnknownHostException e) {
-      System.err.println("Could not register with DS: " + e);
-    } catch (IOException e) {
-      System.err.println("Could not register with DS: " + e);
-      e.printStackTrace();
-    } finally {
-      RapidUtils.closeQuietly(ois);
-      RapidUtils.closeQuietly(oos);
-      RapidUtils.closeQuietly(socket);
-    }
-  }
+			oos.writeByte(RapidMessages.DEMO_SERVER_REGISTER_DS);
+			oos.writeUTF(myIp);
+			oos.flush();
+		} catch (UnknownHostException e) {
+			System.err.println("Could not register with DS: " + e);
+		} catch (IOException e) {
+			System.err.println("Could not register with DS: " + e);
+			e.printStackTrace();
+		} finally {
+			RapidUtils.closeQuietly(ois);
+			RapidUtils.closeQuietly(oos);
+			RapidUtils.closeQuietly(socket);
+		}
+	}
 
-  private class ClientHandler implements Runnable {
+	private class ClientHandler implements Runnable {
 
-    private static final String TAG = "AnimationClientHandler";
-    private Socket clientSocket;
-    private PrintWriter out;
-    private BufferedReader in;
+		private static final String TAG = "AnimationClientHandler";
+		private Socket clientSocket;
+		private PrintWriter out;
+		private BufferedReader in;
 
-    public ClientHandler(Socket clientSocket) {
-      this.clientSocket = clientSocket;
-    }
+		public ClientHandler(Socket clientSocket) {
+			this.clientSocket = clientSocket;
+		}
 
-    @Override
-    public void run() {
+		@Override
+		public void run() {
 
-      try {
-        out = new PrintWriter(clientSocket.getOutputStream(), true);
-        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			try {
+				out = new PrintWriter(clientSocket.getOutputStream(), true);
+				in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-        String command = null;
-        while ((command = in.readLine()) != null) {
+				String command = null;
+				while ((command = in.readLine()) != null) {
 
-          if (command.equals("PING")) {
-            continue;
-          } else {
-            try {
-              commandQueue.put(command);
-              out.println("0");
-              log(TAG, "Inserted command: " + command);
-            } catch (InterruptedException e) {
-              System.err.println("InterruptedException inserting command: " + e);
-            }
-          }
-        }
-      } catch (IOException e) {
-        // TODO Auto-generated catch block
-        // e.printStackTrace();
-      } finally {
-        if (out != null)
-          out.close();
-        if (in != null) {
-          try {
-            in.close();
-          } catch (IOException e) {
-          }
-        }
-        if (clientSocket != null) {
-          try {
-            clientSocket.close();
-          } catch (IOException e) {
-          }
-        }
-      }
-    }
-  }
+					if (command.equals("PING")) {
+						continue;
+					} else {
+						try {
+							commandQueue.put(command);
+							out.println("0");
+							log(TAG, "Inserted command: " + command);
+						} catch (InterruptedException e) {
+							System.err.println("InterruptedException inserting command: " + e);
+						}
+					}
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				// e.printStackTrace();
+			} finally {
+				if (out != null)
+					out.close();
+				if (in != null) {
+					try {
+						in.close();
+					} catch (IOException e) {
+					}
+				}
+				if (clientSocket != null) {
+					try {
+						clientSocket.close();
+					} catch (IOException e) {
+					}
+				}
+			}
+		}
+	}
 
-  private class CommandHandler implements Runnable {
+	private class CommandHandler implements Runnable {
 
-    private static final String TAG = "CommandHandler";
+		private static final String TAG = "CommandHandler";
 
-    @Override
-    public void run() {
+		@Override
+		public void run() {
 
-      initialize();
-      boolean prev = false;
+			initialize();
+			boolean prev = false;
 
-      while (true) {
+			while (true) {
 
-        String command;
-        try {
-          // log(TAG, "Waiting for command...");
-          command = commandQueue.take();
+				String command;
+				try {
+					// log(TAG, "Waiting for command...");
+					command = commandQueue.take();
 
-          log(TAG, command);
+					log(TAG, command);
 
-          AnimationMsg enumCommand = AnimationMsg.valueOf(command);
-          switch (enumCommand) {
-              case INITIAL_IMG_0:
-                  imgVisualizer.updatePanel(Images.getImage(1));
-                  break;
-              case DS_UP:
-                  imgVisualizer.updatePanel(Images.getImage(2));
-                  labelSlamStatus.setText(LABEL_DS_STATUS + "UP");
-                  break;
-              case SLAM_UP:
-                  imgVisualizer.updatePanel(Images.getImage(3));
-                  labelSlamStatus.setText(LABEL_SLAM_STATUS + "UP");
-                  break;
-              case SLAM_REGISTER_DS:
-                  Thread.sleep(1000);
-                  imgVisualizer.updatePanel(Images.getImage(4));
-                  break;
-              case VMM_UP:
-                  imgVisualizer.updatePanel(Images.getImage(5));
-                  labelSlamStatus.setText(LABEL_VMM_STATUS + "UP");
-                  break;
-              case VMM_REGISTER_DS:
-                  imgVisualizer.updatePanel(Images.getImage(6));
-                  break;
-              case VMM_REGISTER_SLAM:
-                  imgVisualizer.updatePanel(Images.getImage(7));
-                  break;
-              case AC_INITIAL_IMG:
-                  imgVisualizer.updatePanel(Images.getImage(8));
-                  break;
+					AnimationMsg enumCommand = AnimationMsg.valueOf(command);
+					switch (enumCommand) {
+					case INITIAL_IMG_0:
+						imgVisualizer.updatePanel(Images.getImage(1));
+						break;
+					case DS_UP:
+						imgVisualizer.updatePanel(Images.getImage(2));
+						labelSlamStatus.setText(LABEL_DS_STATUS + "UP");
+						break;
+					case SLAM_UP:
+						imgVisualizer.updatePanel(Images.getImage(3));
+						labelSlamStatus.setText(LABEL_SLAM_STATUS + "UP");
+						break;
+					case SLAM_REGISTER_DS:
+						Thread.sleep(1000);
+						imgVisualizer.updatePanel(Images.getImage(4));
+						break;
+					case VMM_UP:
+						imgVisualizer.updatePanel(Images.getImage(5));
+						labelSlamStatus.setText(LABEL_VMM_STATUS + "UP");
+						break;
 
-            // The Virus Scanning is performed locally
-            /*case AC_DECISION_LOCAL:
-              startTime = System.currentTimeMillis();
-              executing = true;
-              new Thread() {
-                public void run() {
-                  while (executing) {
-                    totalTime = (System.currentTimeMillis() - startTime) / 1000.0;
-                    labelDuration.setText(
-                        LABEL_DURATION + new DecimalFormat("#.##").format(totalTime) + "s");
-                    try {
-                      Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                    }
-                  }
-                }
-              }.start();
+					// by CH
+					case AC_PREV_CONN_VM:
+						imgVisualizer.updatePanel(Images.getImage(31));
+						break;
+					case AC_PREV_REGISTER_VM:
+						imgVisualizer.updatePanel(Images.getImage(32));
+						break;
+					case SLAM_PREV_VM_IP_AC:
+						Thread.sleep(1000);
+						imgVisualizer.updatePanel(Images.getImage(33));
+						break;
+					case VMM_PREV_VM_IP_SLAM:
+						Thread.sleep(1000);
+						imgVisualizer.updatePanel(Images.getImage(34));
+						break;
+					case VMM_PREV_FIND_VM:
+						Thread.sleep(1000);
+						imgVisualizer.updatePanel(Images.getImage(35));
+						break;
+					case SLAM_PREV_VM_REQ_VMM:
+						Thread.sleep(1000);
+						imgVisualizer.updatePanel(Images.getImage(36));
+						break;
+					case AC_PREV_REGISTER_SLAM:
+						Thread.sleep(1000);
+						imgVisualizer.updatePanel(Images.getImage(37));
+						break;
+					case DS_PREV_IP_AC:
+						Thread.sleep(1000);
+						imgVisualizer.updatePanel(Images.getImage(38));
+						break;
+					case DS_PREV_FIND_MACHINE:
+						Thread.sleep(1000);
+						imgVisualizer.updatePanel(Images.getImage(39));
+						break;
+					case AC_PREV_VM_DS:
+						imgVisualizer.updatePanel(Images.getImage(40));
+						break;
+					case AC_INITIAL_IMG:
+						imgVisualizer.updatePanel(Images.getImage(41));
+						break;
+					case AC_OFFLOADING_FINISHED:
+						imgVisualizer.updatePanel(Images.getImage(42));
+						break;
+					case AS_RESULT_AC:
+						imgVisualizer.updatePanel(Images.getImage(43));
+						break;
+					case AS_RUN_METHOD:
+						imgVisualizer.updatePanel(Images.getImage(44));
+						break;
+					case AC_DECISION_OFFLOAD_AS:
+						imgVisualizer.updatePanel(Images.getImage(45));
+						break;
+					case AC_PREPARE_DATA:
+						imgVisualizer.updatePanel(Images.getImage(46));
+						break;
+					case AC_LOCAL_FINISHED:
+						imgVisualizer.updatePanel(Images.getImage(48));
+						break;
+					case AC_DECISION_LOCAL:
+						imgVisualizer.updatePanel(Images.getImage(49));
+						break;
+					case AC_OFFLOADING_FINISHED_D2D:
+						imgVisualizer.updatePanel(Images.getImage(52));
+						break;
+					case AS_RESULT_AC_D2D:
+						imgVisualizer.updatePanel(Images.getImage(53));
+						break;
+					case AS_RUN_METHOD_D2D:
+						imgVisualizer.updatePanel(Images.getImage(54));
+						break;
+					case AC_OFFLOAD_D2D:
+						imgVisualizer.updatePanel(Images.getImage(55));
+						break;
+					case AC_PREPARE_DATA_D2D:
+						imgVisualizer.updatePanel(Images.getImage(56));
+						break;
+					case D2D_INITIAL_IMG:
+						imgVisualizer.updatePanel(Images.getImage(57));
+						break;
+					case AC_RECEIVED_D2D:
+						imgVisualizer.updatePanel(Images.getImage(58));
+						break;
+					case AS_BROADCASTING_D2D:
+						imgVisualizer.updatePanel(Images.getImage(59));
+						break;
+					case AC_LISTENING_D2D:
+						imgVisualizer.updatePanel(Images.getImage(60));
+						break;
 
-              labelExecution.setText(LABEL_EXECUTION + "Local");
-              break;*/
+					// The Virus Scanning is performed locally
+					/*
+					 * case AC_DECISION_LOCAL: startTime =
+					 * System.currentTimeMillis(); executing = true; new
+					 * Thread() { public void run() { while (executing) {
+					 * totalTime = (System.currentTimeMillis() - startTime) /
+					 * 1000.0; labelDuration.setText( LABEL_DURATION + new
+					 * DecimalFormat("#.##").format(totalTime) + "s"); try {
+					 * Thread.sleep(10); } catch (InterruptedException e) { } }
+					 * } }.start();
+					 * 
+					 * labelExecution.setText(LABEL_EXECUTION + "Local"); break;
+					 */
 
-            default:
-              break;
+					default:
+						break;
 
-            // The Virus Scanning is performed remotely
-          }
+					// The Virus Scanning is performed remotely
+					}
 
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-      }
-    }
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 
+		private void initialize() {
+			imgVisualizer.updatePanel(Images.getImage(1));
+			labelDsStatus.setText(LABEL_DS_STATUS + "Down");
+			labelVmmStatus.setText(LABEL_VMM_STATUS + "Down");
+			labelVmStatus.setText(LABEL_VM_STATUS + "Down");
+			labelSlamStatus.setText(LABEL_SLAM_STATUS + "TODO");
 
-    private void initialize() {
-      imgVisualizer.updatePanel(Images.getImage(1));
-      labelDsStatus.setText(LABEL_DS_STATUS + "Down");
-      labelVmmStatus.setText(LABEL_VMM_STATUS + "Down");
-      labelVmStatus.setText(LABEL_VM_STATUS + "Down");
-      labelSlamStatus.setText(LABEL_SLAM_STATUS + "TODO");
+			labelExecution.setText(LABEL_EXECUTION + "-");
+			labelDuration.setText(LABEL_DURATION + "-");
+			labelCommType.setText(LABEL_COMM_TYPE + "-");
+		}
+	}
 
-      labelExecution.setText(LABEL_EXECUTION + "-");
-      labelDuration.setText(LABEL_DURATION + "-");
-      labelCommType.setText(LABEL_COMM_TYPE + "-");
-    }
-  }
+	private class ImageVisualizer extends JFrame {
 
+		private static final long serialVersionUID = -5697368399955840121L;
+		private MarvinImagePanel imagePanel;
+		private JPanel infoPanel;
 
-  private class ImageVisualizer extends JFrame {
+		public ImageVisualizer() {
+			super("RAPID Demo");
 
-    private static final long serialVersionUID = -5697368399955840121L;
-    private MarvinImagePanel imagePanel;
-    private JPanel infoPanel;
+			imagePanel = new MarvinImagePanel();
+			// imagePanel.setImage(Images.im_start_0);
 
-    public ImageVisualizer() {
-      super("RAPID Demo");
+			infoPanel = new JPanel();
+			infoPanel.setLayout(new GridLayout(5, 2, 5, 5));
+			infoPanel.setBorder(BorderFactory.createEmptyBorder(5, 70, 5, 5));
+			infoPanel.add(labelDsStatus);
+			infoPanel.add(labelExecution);
+			infoPanel.add(labelVmmStatus);
+			infoPanel.add(labelDuration);
+			infoPanel.add(labelVmStatus);
+			// infoPanel.add(label_energy);
+			infoPanel.add(labelCommType);
+			infoPanel.add(labelSlamStatus);
+			infoPanel.add(new JLabel());
 
-      imagePanel = new MarvinImagePanel();
-      // imagePanel.setImage(Images.im_start_0);
+			// Container
+			Container con = getContentPane();
+			con.setLayout(new BorderLayout());
+			con.add(imagePanel, BorderLayout.NORTH);
+			con.add(infoPanel, BorderLayout.SOUTH);
 
-      infoPanel = new JPanel();
-      infoPanel.setLayout(new GridLayout(5, 2, 5, 5));
-      infoPanel.setBorder(BorderFactory.createEmptyBorder(5, 70, 5, 5));
-      infoPanel.add(labelDsStatus);
-      infoPanel.add(labelExecution);
-      infoPanel.add(labelVmmStatus);
-      infoPanel.add(labelDuration);
-      infoPanel.add(labelVmStatus);
-      // infoPanel.add(label_energy);
-      infoPanel.add(labelCommType);
-      infoPanel.add(labelSlamStatus);
-      infoPanel.add(new JLabel());
+			setSize(700, 750);
+			setResizable(false);
+			setVisible(true);
+		}
 
-      // Container
-      Container con = getContentPane();
-      con.setLayout(new BorderLayout());
-      con.add(imagePanel, BorderLayout.NORTH);
-      con.add(infoPanel, BorderLayout.SOUTH);
+		public void updatePanel(MarvinImage image) {
+			imagePanel.setImage(image);
+		}
 
-      setSize(700, 750);
-      setResizable(false);
-      setVisible(true);
-    }
+	}
 
-    public void updatePanel(MarvinImage image) {
-      imagePanel.setImage(image);
-    }
+	private void log(String tag, String msg) {
+		System.out.println("[" + tag + "]: " + msg);
+	}
 
-  }
-
-  private void log(String tag, String msg) {
-    System.out.println("[" + tag + "]: " + msg);
-  }
-
-  public static void main(String[] args) {
-    new AnimationServer();
-  }
+	public static void main(String[] args) {
+		new AnimationServer();
+	}
 }
