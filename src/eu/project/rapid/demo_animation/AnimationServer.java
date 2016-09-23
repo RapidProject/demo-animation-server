@@ -211,33 +211,10 @@ public class AnimationServer {
           log(TAG, command);
 
           switch (command) {
-            // The Virus Scanning is performed locally
-            case RapidMessages.AC_DECISION_LOCAL:
-              startTime = System.currentTimeMillis();
-              executing = true;
-              new Thread() {
-                public void run() {
-                  while (executing) {
-                    totalTime = (System.currentTimeMillis() - startTime) / 1000.0;
-                    labelDuration.setText(
-                        LABEL_DURATION + new DecimalFormat("#.##").format(totalTime) + "s");
-                    try {
-                      Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                    }
-                  }
-                }
-              }.start();
-
-              labelExecution.setText(LABEL_EXECUTION + "Local");
-              break;
-
-            // The Virus Scanning is performed remotely
-
+                //START ADDING COMMANDS HERE
           }
 
         } catch (InterruptedException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         }
       }
