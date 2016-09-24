@@ -27,7 +27,6 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -131,11 +130,8 @@ public class SecondaryAnimationServer {
       oos.writeByte(RapidMessages.DEMO_SERVER_REGISTER_DS);
       oos.writeUTF(myIp);
       oos.flush();
-    } catch (UnknownHostException e) {
-      System.err.println("Could not register with DS: " + e);
     } catch (IOException e) {
       System.err.println("Could not register with DS: " + e);
-      e.printStackTrace();
     } finally {
       RapidUtils.closeQuietly(ois);
       RapidUtils.closeQuietly(oos);
