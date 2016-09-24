@@ -51,8 +51,8 @@ import marvin.image.MarvinImage;
  * @author sokol
  *
  */
-public class AnimationServer {
-  private static final String TAG = "AnimationServer";
+public class SecondaryAnimationServer {
+  private static final String TAG = "SecondaryAnimationServer";
   private ServerSocket serverSocket;
 
   private static BlockingQueue<String> commandQueue;
@@ -81,7 +81,7 @@ public class AnimationServer {
   private long startTime = 0;
   private double totalTime = 0;
 
-  public AnimationServer() {
+  public SecondaryAnimationServer() {
 
     commandQueue = new ArrayBlockingQueue<String>(1000);
 
@@ -151,7 +151,7 @@ public class AnimationServer {
    */
   private class PrimaryAnimationReader implements Runnable {
 
-    private Socket primaryServerSocket;
+    private Socket primarySocket;
     private PrintWriter out;
     private BufferedReader in;
 
@@ -160,16 +160,16 @@ public class AnimationServer {
       try {
         log(TAG, "Started thread that waits for messages from the primary animation server");
 
-        primaryServerSocket = new Socket(RapidConstants.DEFAULT_PRIMARY_ANIMATION_SERVER_IP,
+        primarySocket = new Socket(RapidConstants.DEFAULT_PRIMARY_ANIMATION_SERVER_IP,
             RapidConstants.DEFAULT_PRIMARY_ANIMATION_SERVER_PORT);
-        out = new PrintWriter(primaryServerSocket.getOutputStream(), true);
-        in = new BufferedReader(new InputStreamReader(primaryServerSocket.getInputStream()));
+        out = new PrintWriter(primarySocket.getOutputStream(), true);
+        in = new BufferedReader(new InputStreamReader(primarySocket.getInputStream()));
 
         out.println("GET_COMMANDS");
         out.flush();
 
         // Start heartbeat server
-        new Thread(new PrimaryAnimationHeartbeats(primaryServerSocket, out, in)).start();
+        new Thread(new PrimaryAnimationHeartbeats(primarySocket, out, in)).start();
 
         String command = null;
         while ((command = in.readLine()) != null) {
@@ -195,13 +195,13 @@ public class AnimationServer {
    */
   private class PrimaryAnimationHeartbeats implements Runnable {
 
-    private Socket primaryServerSocket;
+    private Socket primarySocket;
     private PrintWriter out;
     private BufferedReader in;
 
     public PrimaryAnimationHeartbeats(Socket primaryServerSocket, PrintWriter out,
         BufferedReader in) {
-      this.primaryServerSocket = primaryServerSocket;
+      this.primarySocket = primaryServerSocket;
       this.out = out;
       this.in = in;
     }
@@ -553,6 +553,6 @@ public class AnimationServer {
   }
 
   public static void main(String[] args) {
-    new AnimationServer();
+    new SecondaryAnimationServer();
   }
 }
