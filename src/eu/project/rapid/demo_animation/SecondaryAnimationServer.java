@@ -299,7 +299,7 @@ public class SecondaryAnimationServer {
               break;
             case DS_UP:
               imgVisualizer.updatePanel(Images.getImage(2));
-              labelSlamStatus.setText(LABEL_DS_STATUS + "UP");
+              labelDsStatus.setText(LABEL_DS_STATUS + "UP");
               break;
             case SLAM_UP:
               imgVisualizer.updatePanel(Images.getImage(3));
@@ -311,13 +311,15 @@ public class SecondaryAnimationServer {
               break;
             case VMM_UP:
               imgVisualizer.updatePanel(Images.getImage(5));
-              labelSlamStatus.setText(LABEL_VMM_STATUS + "UP");
+              labelVmmStatus.setText(LABEL_VMM_STATUS + "UP");
               break;
             case VMM_REGISTER_DS:
               imgVisualizer.updatePanel(Images.getImage(6));
               break;
             case VMM_REGISTER_SLAM:
               imgVisualizer.updatePanel(Images.getImage(7));
+              labelSlamStatus.setText(LABEL_SLAM_STATUS + "UP");
+              labelVmmStatus.setText(LABEL_VMM_STATUS + "UP");
               break;
             // Scenario 2:
             case AC_NEW_REGISTER_DS:
@@ -533,7 +535,7 @@ public class SecondaryAnimationServer {
       con.add(imagePanel, BorderLayout.NORTH);
       con.add(infoPanel, BorderLayout.SOUTH);
 
-      setSize(700, 750);
+      setSize(700, 850);
       setResizable(false);
       setVisible(true);
     }
