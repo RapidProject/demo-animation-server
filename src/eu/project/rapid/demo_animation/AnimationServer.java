@@ -55,7 +55,6 @@ import marvin.image.MarvinImage;
 public class AnimationServer {
   private static final String TAG = "AnimationServer";
   private ServerSocket serverSocket;
-  private static final int port = 6666;
 
   private static BlockingQueue<String> commandQueue;
 
@@ -93,18 +92,25 @@ public class AnimationServer {
     // Connect with the DS and register so that the other components can get the IP
     // registerWithDs();
 
-    // Now can start listening for commands
+    // Start thread that consumes commands
     new Thread(new CommandHandler()).start();
 
+    // Start thread that connects to the primary animation server and retrieves messages from there
+    // to show here.
+    new Thread(new PrimaryAnimationReader()).start();
+
+    // Then start also listening for connections from components that don't need to go through the
+    // primary animation server
     try {
-      serverSocket = new ServerSocket(port);
-      log(TAG, "Waiting for connections on port " + port);
+      serverSocket = new ServerSocket(RapidConstants.DEFAULT_SECONDARY_ANIMATION_SERVER_PORT);
+      log(TAG, "Waiting for connections on port "
+          + RapidConstants.DEFAULT_SECONDARY_ANIMATION_SERVER_PORT);
       while (true) {
         Socket clientSocket = serverSocket.accept();
         new Thread(new ClientHandler(clientSocket)).start();
       }
-
     } catch (IOException e) {
+      log(TAG, "Error while waiting for connections: " + e);
     }
   }
 
@@ -134,6 +140,84 @@ public class AnimationServer {
       RapidUtils.closeQuietly(ois);
       RapidUtils.closeQuietly(oos);
       RapidUtils.closeQuietly(socket);
+    }
+  }
+
+  /**
+   * Thread that connects with the primary animation server and waits for messages.
+   * 
+   * @author sokol
+   *
+   */
+  private class PrimaryAnimationReader implements Runnable {
+
+    private Socket primaryServerSocket;
+    private PrintWriter out;
+    private BufferedReader in;
+
+    @Override
+    public void run() {
+      try {
+        log(TAG, "Started thread that waits for messages from the primary animation server");
+
+        primaryServerSocket = new Socket(RapidConstants.DEFAULT_PRIMARY_ANIMATION_SERVER_IP,
+            RapidConstants.DEFAULT_PRIMARY_ANIMATION_SERVER_PORT);
+        out = new PrintWriter(primaryServerSocket.getOutputStream(), true);
+        in = new BufferedReader(new InputStreamReader(primaryServerSocket.getInputStream()));
+
+        out.println("GET_COMMANDS");
+        out.flush();
+
+        // Start heartbeat server
+        new Thread(new PrimaryAnimationHeartbeats(primaryServerSocket, out, in)).start();
+
+        String command = null;
+        while ((command = in.readLine()) != null) {
+          log(TAG, "Command from primary animation server: " + command);
+          try {
+            commandQueue.put(command);
+          } catch (InterruptedException e) {
+            log(TAG, "Could not insert command on blocking queue: " + e);
+          }
+        }
+      } catch (IOException e) {
+        log(TAG, "Could not connect with primary animation server: " + e);
+      }
+    }
+  }
+
+  /**
+   * Thread that sends heartbeat messages every ten seconds to the primary server so to keep the
+   * connection alive.
+   * 
+   * @author sokol
+   *
+   */
+  private class PrimaryAnimationHeartbeats implements Runnable {
+
+    private Socket primaryServerSocket;
+    private PrintWriter out;
+    private BufferedReader in;
+
+    public PrimaryAnimationHeartbeats(Socket primaryServerSocket, PrintWriter out,
+        BufferedReader in) {
+      this.primaryServerSocket = primaryServerSocket;
+      this.out = out;
+      this.in = in;
+    }
+
+    @Override
+    public void run() {
+      log(TAG, "Started thread that sends heartbeat messages to primary animation server");
+      while (true) {
+        try {
+          log(TAG, "Sending heartbeat message to primary animation server");
+          Thread.sleep(10 * 1000);
+          out.println("PING");
+          out.flush();
+        } catch (InterruptedException e) {
+        }
+      }
     }
   }
 
@@ -206,7 +290,7 @@ public class AnimationServer {
 
         String command;
         try {
-          // log(TAG, "Waiting for command...");
+          log(TAG, "Waiting for commands to be inserted in the queue...");
           command = commandQueue.take();
 
           log(TAG, command);
