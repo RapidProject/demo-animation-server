@@ -208,7 +208,7 @@ public class SecondaryAnimationServer {
       while (true) {
         try {
           log(TAG, "Sending heartbeat message to primary animation server");
-          Thread.sleep(10 * 1000);
+          Thread.sleep(30 * 1000);
           out.println("PING");
           out.flush();
         } catch (InterruptedException e) {
