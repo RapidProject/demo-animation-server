@@ -35,6 +35,4 @@ public class Images {
   public static final MarvinImage getImage(int i) {
     return images.get(i);
   }
-
-
 }
