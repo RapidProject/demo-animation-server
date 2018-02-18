@@ -15,24 +15,24 @@
  *******************************************************************************/
 package eu.project.rapid.demo_animation;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import marvin.image.MarvinImage;
 import marvin.io.MarvinImageIO;
 
-public class Images {
+import java.util.HashMap;
+import java.util.Map;
 
-  // images list
-  public static final Map<Integer, MarvinImage> images = new HashMap<>();
+class Images {
 
-  static {
-    for (int i = 1; i <= 61; i++) {
-      images.put(i, MarvinImageIO.loadImage("resources/figs/100-dip/f-" + i + ".png"));
+    // images list
+    private static final Map<Integer, MarvinImage> images = new HashMap<>();
+
+    static {
+        for (int i = 1; i <= 61; i++) {
+            images.put(i, MarvinImageIO.loadImage("resources/figs/100-dip/f-" + i + ".png"));
+        }
     }
-  }
 
-  public static final MarvinImage getImage(int i) {
-    return images.get(i);
-  }
+    static MarvinImage getImage(int i) {
+        return images.get(i);
+    }
 }
