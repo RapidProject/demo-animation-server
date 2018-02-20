@@ -127,7 +127,9 @@ public class SecondaryAnimationServer {
             try {
                 log(TAG, "Started thread that waits for messages from the primary animation server");
 
-                primarySocket = new Socket(RapidConstants.DEFAULT_PRIMARY_ANIMATION_SERVER_IP,
+//                primarySocket = new Socket("193.205.230.8",
+                primarySocket = new Socket("127.0.0.1",
+//                primarySocket = new Socket(RapidConstants.DEFAULT_PRIMARY_ANIMATION_SERVER_IP,
                         RapidConstants.DEFAULT_PRIMARY_ANIMATION_SERVER_PORT);
                 out = new PrintWriter(primarySocket.getOutputStream(), true);
                 in = new BufferedReader(new InputStreamReader(primarySocket.getInputStream()));
@@ -144,7 +146,7 @@ public class SecondaryAnimationServer {
                 labelVmmStatus.setText(LABEL_VMM_STATUS + (isVmmUp ? "UP" : "Down"));
 
                 // Start heartbeat server
-                new Thread(new PrimaryAnimationHeartbeats(primarySocket, out, in)).start();
+                new Thread(new PrimaryAnimationHeartbeats(out)).start();
 
                 String command;
                 while ((command = in.readLine()) != null) {
@@ -169,15 +171,10 @@ public class SecondaryAnimationServer {
      */
     private class PrimaryAnimationHeartbeats implements Runnable {
 
-        private Socket primarySocket;
         private PrintWriter out;
-        private BufferedReader in;
 
-        PrimaryAnimationHeartbeats(Socket primaryServerSocket, PrintWriter out,
-                                   BufferedReader in) {
-            this.primarySocket = primaryServerSocket;
+        PrimaryAnimationHeartbeats(PrintWriter out) {
             this.out = out;
-            this.in = in;
         }
 
         @Override
@@ -264,89 +261,91 @@ public class SecondaryAnimationServer {
                     log(TAG, command);
 
                     AnimationMsg enumCommand = AnimationMsg.valueOf(command);
+                    imgVisualizer.updatePanel(Images.getImage(enumCommand));
+
                     switch (enumCommand) {
                         // Scenario 1: DS, SLAM, VMM starting up
                         case INITIAL_IMG_0:
-                            imgVisualizer.updatePanel(Images.getImage(1));
+//                            imgVisualizer.updatePanel(Images.getImage(1));
                             break;
                         case DS_UP:
-                            imgVisualizer.updatePanel(Images.getImage(2));
+//                            imgVisualizer.updatePanel(Images.getImage(2));
                             labelDsStatus.setText(LABEL_DS_STATUS + "UP");
                             break;
                         case SLAM_UP:
-                            imgVisualizer.updatePanel(Images.getImage(3));
+//                            imgVisualizer.updatePanel(Images.getImage(3));
                             labelSlamStatus.setText(LABEL_SLAM_STATUS + "UP");
                             break;
                         case SLAM_REGISTER_DS:
                             // Thread.sleep(1000);
-                            imgVisualizer.updatePanel(Images.getImage(4));
+//                            imgVisualizer.updatePanel(Images.getImage(4));
                             break;
                         case VMM_UP:
-                            imgVisualizer.updatePanel(Images.getImage(5));
+//                            imgVisualizer.updatePanel(Images.getImage(5));
                             labelVmmStatus.setText(LABEL_VMM_STATUS + "UP");
                             break;
                         case VMM_REGISTER_DS:
-                            imgVisualizer.updatePanel(Images.getImage(6));
+//                            imgVisualizer.updatePanel(Images.getImage(6));
                             break;
                         case VMM_REGISTER_SLAM:
-                            imgVisualizer.updatePanel(Images.getImage(7));
+//                            imgVisualizer.updatePanel(Images.getImage(7));
                             labelSlamStatus.setText(LABEL_SLAM_STATUS + "UP");
                             labelVmmStatus.setText(LABEL_VMM_STATUS + "UP");
                             break;
                         // Scenario 2:
                         case AC_NEW_REGISTER_DS:
-                            imgVisualizer.updatePanel(Images.getImage(9));
+//                            imgVisualizer.updatePanel(Images.getImage(9));
                             break;
                         //
                         case DS_NEW_FIND_MACHINES:
-                            imgVisualizer.updatePanel(Images.getImage(10));
+//                            imgVisualizer.updatePanel(Images.getImage(10));
                             break;
                         case DS_NEW_IP_LIST_AC:
-                            imgVisualizer.updatePanel(Images.getImage(11));
+//                            imgVisualizer.updatePanel(Images.getImage(11));
                             break;
                         case AC_NEW_REGISTER_SLAM:
-                            imgVisualizer.updatePanel(Images.getImage(12));
+//                            imgVisualizer.updatePanel(Images.getImage(12));
                             break;
                         case SLAM_NEW_VM_VMM:
-                            imgVisualizer.updatePanel(Images.getImage(13));
+//                            imgVisualizer.updatePanel(Images.getImage(13));
                             break;
                         case VMM_NEW_START_VM:
-                            imgVisualizer.updatePanel(Images.getImage(14));
+//                            imgVisualizer.updatePanel(Images.getImage(14));
                             break;
                         case VMM_NEW_REGISTER_AS:
-                            imgVisualizer.updatePanel(Images.getImage(15));
+//                            imgVisualizer.updatePanel(Images.getImage(15));
                             break;
                         case VMM_NEW_VM_REGISTER_DS:
-                            imgVisualizer.updatePanel(Images.getImage(16));
+//                            imgVisualizer.updatePanel(Images.getImage(16));
                             break;
                         case VMM_NEW_VM_IP_SLAM:
-                            imgVisualizer.updatePanel(Images.getImage(17));
+//                            imgVisualizer.updatePanel(Images.getImage(17));
                             break;
                         case SLAM_NEW_VM_IP_AC:
-                            imgVisualizer.updatePanel(Images.getImage(18));
+//                            imgVisualizer.updatePanel(Images.getImage(18));
                             break;
                         case AC_NEW_REGISTER_VM:
-                            imgVisualizer.updatePanel(Images.getImage(19));
+//                            imgVisualizer.updatePanel(Images.getImage(19));
                             labelCommType.setText(LABEL_COMM_TYPE + "CLEAR");
                             labelVmStatus.setText(LABEL_VM_STATUS + "UP Connecting...");
                             break;
                         case AC_NEW_CONN_VM:
-                            imgVisualizer.updatePanel(Images.getImage(20));
+//                            imgVisualizer.updatePanel(Images.getImage(20));
                             break;
                         case AC_NEW_APK_VM:
-                            imgVisualizer.updatePanel(Images.getImage(21));
+//                            imgVisualizer.updatePanel(Images.getImage(21));
                             break;
                         case AC_NEW_RTT_VM:
-                            imgVisualizer.updatePanel(Images.getImage(22));
+//                            imgVisualizer.updatePanel(Images.getImage(22));
                             break;
                         case AC_NEW_DL_RATE_VM:
-                            imgVisualizer.updatePanel(Images.getImage(23));
+//                            imgVisualizer.updatePanel(Images.getImage(23));
                             break;
                         case AC_NEW_UL_RATE_VM:
-                            imgVisualizer.updatePanel(Images.getImage(24));
+//                            imgVisualizer.updatePanel(Images.getImage(24));
                             break;
                         case AC_NEW_REGISTRATION_OK_VM:
-                            imgVisualizer.updatePanel(Images.getImage(25));
+//                            imgVisualizer.updatePanel(Images.getImage(25));
                             String temp = labelVmStatus.getText();
                             labelVmStatus.setText(temp.substring(0, temp.lastIndexOf(" ")) + " CONNECTED");
                             labelVmStatus.setBackground(Color.GREEN);
@@ -354,73 +353,73 @@ public class SecondaryAnimationServer {
 
                         // Scenario 3:
                         case AC_PREV_REGISTRATION_OK_VM:
-                            imgVisualizer.updatePanel(Images.getImage(26));
+//                            imgVisualizer.updatePanel(Images.getImage(26));
                             temp = labelVmStatus.getText();
                             labelVmStatus.setText(temp.substring(0, temp.lastIndexOf(" ")) + " CONNECTED");
                             labelVmStatus.setBackground(Color.GREEN);
                             break;
                         case AC_PREV_UL_RATE_VM:
-                            imgVisualizer.updatePanel(Images.getImage(27));
+//                            imgVisualizer.updatePanel(Images.getImage(27));
                             break;
                         case AC_PREV_DL_RATE_VM:
-                            imgVisualizer.updatePanel(Images.getImage(28));
+//                            imgVisualizer.updatePanel(Images.getImage(28));
                             break;
                         case AC_PREV_RTT_VM:
-                            imgVisualizer.updatePanel(Images.getImage(29));
+//                            imgVisualizer.updatePanel(Images.getImage(29));
                             break;
                         case AC_PREV_APK_VM:
-                            imgVisualizer.updatePanel(Images.getImage(30));
+//                            imgVisualizer.updatePanel(Images.getImage(30));
                             break;
                         //
                         // by CH
                         case AC_PREV_CONN_VM:
-                            imgVisualizer.updatePanel(Images.getImage(31));
+//                            imgVisualizer.updatePanel(Images.getImage(31));
                             break;
                         case AC_PREV_REGISTER_VM:
-                            imgVisualizer.updatePanel(Images.getImage(32));
+//                            imgVisualizer.updatePanel(Images.getImage(32));
                             labelCommType.setText(LABEL_COMM_TYPE + "CLEAR");
                             labelVmStatus.setText(LABEL_VM_STATUS + "UP Connecting...");
                             break;
                         case AC_REGISTER_VM_ERROR:
-                            imgVisualizer.updatePanel(Images.getImage(51));
+//                            imgVisualizer.updatePanel(Images.getImage(51));
                             temp = labelVmStatus.getText();
                             labelVmStatus.setText(temp.substring(0, temp.lastIndexOf(" ")) + " NOT_CONNECTED");
                             labelVmStatus.setBackground(Color.RED);
                             break;
                         case SLAM_PREV_VM_IP_AC:
                             // Thread.sleep(1000);
-                            imgVisualizer.updatePanel(Images.getImage(33));
+//                            imgVisualizer.updatePanel(Images.getImage(33));
                             break;
                         case VMM_PREV_VM_IP_SLAM:
                             // Thread.sleep(1000);
-                            imgVisualizer.updatePanel(Images.getImage(34));
+//                            imgVisualizer.updatePanel(Images.getImage(34));
                             break;
                         case VMM_PREV_FIND_VM:
                             // Thread.sleep(1000);
                             labelVmStatus.setText(LABEL_VM_STATUS + "UP NOT_CONNECTED");
-                            imgVisualizer.updatePanel(Images.getImage(35));
+//                            imgVisualizer.updatePanel(Images.getImage(35));
                             break;
                         case SLAM_PREV_VM_REQ_VMM:
                             // Thread.sleep(1000);
-                            imgVisualizer.updatePanel(Images.getImage(36));
+//                            imgVisualizer.updatePanel(Images.getImage(36));
                             break;
                         case AC_PREV_REGISTER_SLAM:
                             // Thread.sleep(1000);
-                            imgVisualizer.updatePanel(Images.getImage(37));
+//                            imgVisualizer.updatePanel(Images.getImage(37));
                             break;
                         case DS_PREV_IP_AC:
                             // Thread.sleep(1000);
-                            imgVisualizer.updatePanel(Images.getImage(38));
+//                            imgVisualizer.updatePanel(Images.getImage(38));
                             break;
                         case DS_PREV_FIND_MACHINE:
                             // Thread.sleep(1000);
-                            imgVisualizer.updatePanel(Images.getImage(39));
+//                            imgVisualizer.updatePanel(Images.getImage(39));
                             break;
                         case AC_PREV_VM_DS:
-                            imgVisualizer.updatePanel(Images.getImage(40));
+//                            imgVisualizer.updatePanel(Images.getImage(40));
                             break;
                         case AC_INITIAL_IMG:
-                            imgVisualizer.updatePanel(Images.getImage(41));
+//                            imgVisualizer.updatePanel(Images.getImage(41));
                             // imgVisualizer.updatePanel(Images.getImage(51));
                             labelExecution.setText(LABEL_EXECUTION + "-");
                             labelCommType.setText(LABEL_COMM_TYPE + "-");
@@ -428,62 +427,58 @@ public class SecondaryAnimationServer {
                             break;
                         case AC_OFFLOADING_FINISHED:
                             executing = false;
-                            imgVisualizer.updatePanel(Images.getImage(isD2dOffloading ? 52 : 42));
+//                            imgVisualizer.updatePanel(Images.getImage(isD2dOffloading ? 52 : 42));
                             isD2dOffloading = false;
                             break;
                         case AS_RESULT_AC:
-                            imgVisualizer.updatePanel(Images.getImage(isD2dOffloading ? 53 : 43));
+//                            imgVisualizer.updatePanel(Images.getImage(isD2dOffloading ? 53 : 43));
                             break;
                         case AS_RUN_METHOD:
-                            imgVisualizer.updatePanel(Images.getImage(isD2dOffloading ? 54 : 44));
+//                            imgVisualizer.updatePanel(Images.getImage(isD2dOffloading ? 54 : 44));
                             break;
                         case AC_DECISION_OFFLOAD_AS:
-                            imgVisualizer.updatePanel(Images.getImage(isD2dOffloading ? 55 : 45));
+//                            imgVisualizer.updatePanel(Images.getImage(isD2dOffloading ? 55 : 45));
 
                             executing = true;
                             startTime = System.currentTimeMillis();
-                            new Thread() {
-                                public void run() {
-                                    while (executing) {
-                                        totalTime = (System.currentTimeMillis() - startTime) / 1000.0;
-                                        labelDuration.setText(
-                                                LABEL_DURATION + new DecimalFormat("#.##").format(totalTime) + "s");
-                                        try {
-                                            Thread.sleep(10);
-                                        } catch (InterruptedException ignored) {
-                                        }
+                            new Thread(() -> {
+                                while (executing) {
+                                    totalTime = (System.currentTimeMillis() - startTime) / 1000.0;
+                                    labelDuration.setText(
+                                            LABEL_DURATION + new DecimalFormat("#.##").format(totalTime) + "s");
+                                    try {
+                                        Thread.sleep(10);
+                                    } catch (InterruptedException ignored) {
                                     }
                                 }
-                            }.start();
+                            }).start();
 
                             labelExecution
                                     .setText(LABEL_EXECUTION + (isD2dOffloading ? "D2D OFFLOAD" : "OFFLOAD"));
                             labelCommType.setText(LABEL_COMM_TYPE + "CLEAR");
                             break;
                         case AC_PREPARE_DATA:
-                            imgVisualizer.updatePanel(Images.getImage(46));
+//                            imgVisualizer.updatePanel(Images.getImage(46));
                             break;
                         case AC_LOCAL_FINISHED:
                             executing = false;
-                            imgVisualizer.updatePanel(Images.getImage(48));
+//                            imgVisualizer.updatePanel(Images.getImage(48));
                             break;
                         case AC_DECISION_LOCAL:
-                            imgVisualizer.updatePanel(Images.getImage(49));
+//                            imgVisualizer.updatePanel(Images.getImage(49));
                             startTime = System.currentTimeMillis();
                             executing = true;
-                            new Thread() {
-                                public void run() {
-                                    while (executing) {
-                                        totalTime = (System.currentTimeMillis() - startTime) / 1000.0;
-                                        labelDuration.setText(
-                                                LABEL_DURATION + new DecimalFormat("#.##").format(totalTime) + "s");
-                                        try {
-                                            Thread.sleep(10);
-                                        } catch (InterruptedException ignored) {
-                                        }
+                            new Thread(() -> {
+                                while (executing) {
+                                    totalTime = (System.currentTimeMillis() - startTime) / 1000.0;
+                                    labelDuration.setText(
+                                            LABEL_DURATION + new DecimalFormat("#.##").format(totalTime) + "s");
+                                    try {
+                                        Thread.sleep(10);
+                                    } catch (InterruptedException ignored) {
                                     }
                                 }
-                            }.start();
+                            }).start();
                             labelExecution.setText(LABEL_EXECUTION + "LOCAL");
                             break;
                         // case AC_OFFLOADING_FINISHED_D2D:
@@ -536,14 +531,16 @@ public class SecondaryAnimationServer {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } catch (Exception e) {
-                    log(TAG, "Excepion thrown: " + e);
+                    log(TAG, "Exception thrown: " + e);
                 }
             }
         }
     }
 
     private void initialize() {
-        imgVisualizer.updatePanel(Images.getImage(1));
+//        imgVisualizer.updatePanel(Images.getImage(1));
+//        imgVisualizer.updatePanel(Images.getImage(AnimationMsg.AC_INITIAL_IMG));
+        imgVisualizer.updatePanel(Images.getImage(AnimationMsg.INITIAL_IMG_0));
         labelD2dReceived.setText(LABEL_D2D_RECEIVED + "-");
         labelD2dSent.setText(LABEL_D2D_SENT + 0);
         labelDsStatus.setText(LABEL_DS_STATUS + "Down");

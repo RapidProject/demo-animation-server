@@ -15,24 +15,54 @@
  *******************************************************************************/
 package eu.project.rapid.demo_animation;
 
+import eu.project.rapid.common.RapidMessages;
 import marvin.image.MarvinImage;
 import marvin.io.MarvinImageIO;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 class Images {
 
     // images list
-    private static final Map<Integer, MarvinImage> images = new HashMap<>();
+    private static final Map<String, MarvinImage> images = new HashMap<>();
 
     static {
-        for (int i = 1; i <= 61; i++) {
-            images.put(i, MarvinImageIO.loadImage("resources/figs/100-dip/f-" + i + ".png"));
+        readImages(Paths.get("resources/figs/"));
+    }
+
+    static void readImages(Path path) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+            for (Path entry : stream) {
+//                System.out.println(entry);
+                if (Files.isDirectory(entry)) {
+                    readImages(entry);
+                }
+                else {
+                    if (entry.toString().endsWith(".png")) {
+                        String imgName = entry.getFileName().toString();
+                        imgName = imgName.substring(0, imgName.lastIndexOf(".png"));
+                        String imgPath = entry.toString();
+//                        System.out.println(imgName + " - " + imgPath);
+                        images.put(imgName, MarvinImageIO.loadImage(imgPath));
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    static MarvinImage getImage(int i) {
-        return images.get(i);
+    static MarvinImage getImage(RapidMessages.AnimationMsg msg) {
+        return getImage(msg.toString());
+    }
+
+    static MarvinImage getImage(String imgName) {
+        return images.get(imgName);
     }
 }
